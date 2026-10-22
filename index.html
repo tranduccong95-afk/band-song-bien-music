@@ -1,0 +1,104 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111111">
+<title>Band Sóng Biển - Wedding Music</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101010;color:#fff;font-family:Arial,sans-serif}
+header{padding:28px 20px;background:linear-gradient(135deg,#30240b,#111);border-bottom:1px solid #b99645}
+h1{color:#e6c36b;font-size:25px;margin:0 0 8px}
+.sub{color:#c9c9c9;font-size:13px}
+main{padding:20px;max-width:650px;margin:auto}
+.panel{background:#1c1c1c;border:1px solid #38322a;border-radius:18px;padding:18px;margin-bottom:18px}
+h2{font-size:17px;color:#e6c36b;margin-top:0}
+#song{font-size:20px;font-weight:bold;overflow-wrap:anywhere;margin:18px 0}
+button,.filelabel{border:1px solid #b99645;border-radius:12px;background:#292419;color:#f5d781;padding:13px 15px;font-size:15px;cursor:pointer}
+.controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:20px 0}
+#play{background:#d8b458;color:#17120a;font-weight:bold;min-width:110px}
+input[type=file]{display:none}
+.filelabel{display:inline-block}
+#list{padding:0;list-style:none}
+#list li{padding:13px;border-bottom:1px solid #383838;overflow-wrap:anywhere;cursor:pointer}
+#list li.active{color:#f5d781}
+input[type=search]{width:100%;padding:13px;border-radius:10px;border:1px solid #555;background:#111;color:white;margin-bottom:14px}
+small{color:#aaa}
+footer{text-align:center;padding:22px;color:#aaa;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+<h1>🌊 BAND SÓNG BIỂN</h1>
+<div class="sub">WEDDING MUSIC PLAYER · ĐẦU PHÁT NHẠC CƯỚI</div>
+</header>
+<main>
+<section class="panel">
+<h2>ĐANG PHÁT</h2>
+<div id="song">Chưa chọn bài hát</div>
+<audio id="audio" controls style="width:100%"></audio>
+<div class="controls">
+<button id="prev">⏮ Bài trước</button>
+<button id="play">▶ Phát</button>
+<button id="next">Bài tiếp ⏭</button>
+</div>
+<label class="filelabel">＋ Chọn nhạc từ iPhone
+<input id="files" type="file" accept="audio/*" multiple>
+</label>
+<p><small>Chọn các tệp nhạc đã lưu trong ứng dụng Tệp trên iPhone.</small></p>
+</section>
+<section class="panel">
+<h2>THƯ VIỆN BÀI HÁT</h2>
+<input id="search" type="search" placeholder="Tìm tên bài hát...">
+<ul id="list"></ul>
+</section>
+</main>
+<footer>© BAND SÓNG BIỂN · WEDDING MUSIC</footer>
+<script>
+const audio=document.getElementById('audio');
+const filesInput=document.getElementById('files');
+const list=document.getElementById('list');
+const title=document.getElementById('song');
+const play=document.getElementById('play');
+let songs=[],current=-1;
+function render(){
+list.innerHTML='';
+const q=document.getElementById('search').value.toLowerCase();
+songs.forEach((s,i)=>{
+if(!s.name.toLowerCase().includes(q))return;
+const li=document.createElement('li');
+li.textContent=(i+1)+'. '+s.name;
+if(i===current)li.className='active';
+li.onclick=()=>selectSong(i);
+list.appendChild(li);
+});
+}
+function selectSong(i){
+if(i<0||i>=songs.length)return;
+current=i;
+audio.src=songs[i].url;
+title.textContent=songs[i].name;
+render();
+audio.play().then(()=>play.textContent='⏸ Tạm dừng').catch(()=>play.textContent='▶ Phát');
+}
+filesInput.onchange=()=>{
+for(const file of filesInput.files){
+songs.push({name:file.name,file,url:URL.createObjectURL(file)});
+}
+render();
+if(current<0&&songs.length)selectSong(0);
+};
+play.onclick=()=>{
+if(!audio.src){if(songs.length)selectSong(0);return}
+if(audio.paused){audio.play();play.textContent='⏸ Tạm dừng'}
+else{audio.pause();play.textContent='▶ Phát'}
+};
+document.getElementById('prev').onclick=()=>selectSong(current-1<0?songs.length-1:current-1);
+document.getElementById('next').onclick=()=>selectSong((current+1)%songs.length);
+document.getElementById('search').oninput=render;
+audio.onended=()=>{if(songs.length)selectSong((current+1)%songs.length)};
+</script>
+</body>
+</html>
